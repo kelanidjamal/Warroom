@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#C9A84C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="War Room">
+<link rel="manifest" href="manifest.json">
+<title>War Room — Djamal Kelani</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --navy: #080f1a;
+    --navy2: #0d1a2e;
+    --gold: #C9A84C;
+    --gold-dim: #5a4820;
+    --red: #ff3b3b;
+    --green: #00e676;
+    --blue: #4ab3ff;
+    --white: #f0f4ff;
+    --gray: #2a3a4a;
+    --gray2: #1a2a3a;
+    --text-dim: #6a7a8a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* NAV TABS */
+  .tabs {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #0a0f1a;
+    border-top: 1px solid var(--gold-dim);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 12px 4px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: color 0.2s;
+    color: var(--text-dim);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .tab.active { color: var(--gold); }
+  .tab-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+  /* PAGES */
+  .page { display: none; padding: 16px 16px 90px; position: relative; z-index: 1; }
+  .page.active { display: block; }
+
+  /* HEADER */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--gold-dim);
+  }
+
+  .brand { font-size: 9px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .clock-small { font-size: 18px; font-weight: 700; color: var(--gold); font-family: 'Syne', sans-serif; }
+  .date-small { font-size: 9px; color: var(--text-dim); text-align: right; }
+
+  /* CARDS */
+  .card {
+    background: var(--navy2);
+    border: 1px solid var(--gray);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-gold-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* MRR TARGETS */
+  .mrr-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .mrr-card {
+    text-align: center;
+    padding: 14px 6px;
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .mrr-card.active {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.07);
+  }
+
+  .mrr-card.achieved {
+    border-color: var(--green);
+    background: rgba(0,230,118,0.07);
+  }
+
+  .mrr-month { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 6px; }
+  .mrr-amount { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--gold); }
+  .mrr-achieved { color: var(--green) !important; }
+  .mrr-clients { font-size: 9px; color: var(--text-dim); margin-top: 4px; }
+  .check-badge { position: absolute; top: 6px; right: 6px; font-size: 12px; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .stat-card {
+    background: var(--navy2);
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:active { border-color: var(--gold); }
+  .stat-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; line-height: 1; }
+  .stat-sub { font-size: 9px; color: var(--text-dim); margin-top: 4px; }
+  .stat-hint { font-size: 8px; color: var(--gold-dim); margin-top: 2px; }
+
+  .val-gold { color: var(--gold); }
+  .val-green { color: var(--green); }
+  .val-blue { color: var(--blue); }
+  .val-white { color: var(--white); }
+
+  /* OBJECTIVES */
+  .obj-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--navy2);
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .obj-item:active { transform: scale(0.98); }
+  .obj-item.done { opacity: 0.45; }
+  .obj-item.done .obj-text { text-decoration: line-through; color: var(--text-dim); }
+
+  .checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--gray);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  .obj-item.done .checkbox { background: var(--green); border-color: var(--green); color: #000; }
+
+  .obj-content { flex: 1; min-width: 0; }
+  .obj-text { font-size: 12px; line-height: 1.4; }
+  .obj-tag {
+    font-size: 8px;
+    letter-spacing: 1px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    display: inline-block;
+  }
+
+  .tag-sales { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid var(--gold-dim); }
+  .tag-build { background: rgba(74,179,255,0.1); color: var(--blue); border: 1px solid rgba(74,179,255,0.2); }
+  .tag-urgent { background: rgba(255,59,59,0.1); color: #ff7070; border: 1px solid rgba(255,59,59,0.2); }
+  .tag-personal { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+
+  .obj-delete {
+    font-size: 16px;
+    color: var(--text-dim);
+    padding: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ADD FORM */
+  .add-form {
+    background: var(--navy2);
+    border: 1px solid var(--gray);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .form-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 10px; }
+
+  .text-input {
+    width: 100%;
+    background: var(--navy);
+    border: 1px solid var(--gray);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .text-input:focus { border-color: var(--gold); }
+  .text-input::placeholder { color: var(--text-dim); }
+
+  .form-row { display: flex; gap: 8px; }
+
+  .select-input {
+    flex: 1;
+    background: var(--navy);
+    border: 1px solid var(--gray);
+    border-radius: 8px;
+    color: var(--gold);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 10px;
+    outline: none;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary:active { opacity: 0.7; }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .btn-secondary:active { background: rgba(201,168,76,0.1); }
+
+  /* OUTREACH */
+  .country-card {
+    background: var(--navy2);
+    border: 1px solid var(--gray);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .country-flag { font-size: 24px; flex-shrink: 0; }
+  .country-info { flex: 1; }
+  .country-name { font-size: 12px; font-weight: 700; color: var(--white); }
+  .country-stats { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+  .country-status { font-size: 9px; color: var(--gold); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
+
+  .pulse-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  .pulse-dot.green { background: var(--green); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .country-actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: var(--gray);
+    border: none;
+    border-radius: 6px;
+    color: var(--white);
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  .icon-btn:active { background: var(--gold-dim); }
+
+  /* QUOTE */
+  .quote-box {
+    border-left: 3px solid var(--gold);
+    padding: 14px 16px;
+    background: rgba(201,168,76,0.04);
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 14px;
+  }
+  .quote-text { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; line-height: 1.5; margin-bottom: 6px; }
+  .quote-author { font-size: 9px; color: var(--gold); letter-spacing: 2px; }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 6px;
+    background: var(--gray);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 200;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--navy2);
+    border: 1px solid var(--gold-dim);
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--gold); }
+
+  /* SETTINGS */
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--gray);
+  }
+
+  .setting-label { font-size: 13px; }
+  .setting-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--gray);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--gold); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: var(--white);
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: 23px; }
+
+  /* STREAK */
+  .streak-display {
+    text-align: center;
+    padding: 20px;
+  }
+  .streak-number { font-family: 'Syne', sans-serif; font-size: 64px; font-weight: 800; color: var(--gold); line-height: 1; }
+  .streak-label { font-size: 11px; letter-spacing: 3px; color: var(--text-dim); margin-top: 6px; text-transform: uppercase; }
+  .streak-fire { font-size: 32px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- PAGE: HOME -->
+<div class="page active" id="page-home">
+  <div class="page-header">
+    <div>
+      <div class="brand">JuristVault</div>
+      <div class="page-title">War Room 🔥</div>
+    </div>
+    <div style="text-align:right">
+      <div class="clock-small" id="clock"></div>
+      <div class="date-small" id="dateDisplay"></div>
+    </div>
+  </div>
+
+  <!-- Quote du jour -->
+  <div class="quote-box">
+    <div class="quote-text" id="quoteText"></div>
+    <div class="quote-author">— WAR ROOM · CITATION DU JOUR</div>
+  </div>
+
+  <!-- Streak + Progress -->
+  <div class="card card-gold-top">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="label" style="margin:0">Progression du jour</div>
+      <div style="font-size:12px;color:var(--gold)" id="objProgress">0/0 objectifs</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:12px">
+      <div style="text-align:center">
+        <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--gold)" id="streakDisplay">0</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">JOURS 🔥</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--green)" id="mrrDisplay">$0</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">MRR ACTUEL</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-family:Syne,sans-serif;font-size:22px;font-weight:800;color:var(--blue)" id="emailDisplay">0</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">EMAILS/SEM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MRR Targets -->
+  <div class="card">
+    <div class="label">🎯 Objectifs 3 mois</div>
+    <div class="mrr-grid" id="mrrGrid"></div>
+  </div>
+
+  <!-- Quick stats -->
+  <div class="stats-grid">
+    <div class="stat-card" onclick="editStat('emails')">
+      <div class="stat-label">Emails envoyés</div>
+      <div class="stat-value val-gold" id="statEmails">11</div>
+      <div class="stat-sub">cette semaine</div>
+      <div class="stat-hint">TAP pour modifier</div>
+    </div>
+    <div class="stat-card" onclick="editStat('replies')">
+      <div class="stat-label">Réponses reçues</div>
+      <div class="stat-value val-white" id="statReplies">0</div>
+      <div class="stat-sub">en attente</div>
+      <div class="stat-hint">TAP pour modifier</div>
+    </div>
+    <div class="stat-card" onclick="editStat('demos')">
+      <div class="stat-label">Démos bookées</div>
+      <div class="stat-value val-blue" id="statDemos">0</div>
+      <div class="stat-sub">ce mois</div>
+      <div class="stat-hint">TAP pour modifier</div>
+    </div>
+    <div class="stat-card" onclick="editStat('mrr')">
+      <div class="stat-label">MRR actuel</div>
+      <div class="stat-value val-green" id="statMrr">$0</div>
+      <div class="stat-sub">objectif $3k</div>
+      <div class="stat-hint">TAP pour modifier</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: OBJECTIVES -->
+<div class="page" id="page-objectives">
+  <div class="page-header">
+    <div>
+      <div class="brand">War Room</div>
+      <div class="page-title">Objectifs</div>
+    </div>
+    <button class="btn-primary" style="font-size:11px;padding:8px 14px" onclick="showAddObj()">+ Ajouter</button>
+  </div>
+
+  <div id="objectivesList"></div>
+
+  <div style="text-align:center;padding:8px 0">
+    <button class="btn-secondary" onclick="clearDoneObjs()">🗑 Supprimer les objectifs cochés</button>
+  </div>
+</div>
+
+<!-- PAGE: OUTREACH -->
+<div class="page" id="page-outreach">
+  <div class="page-header">
+    <div>
+      <div class="brand">War Room</div>
+      <div class="page-title">Outreach</div>
+    </div>
+    <button class="btn-primary" style="font-size:11px;padding:8px 14px" onclick="showAddCountry()">+ Pays</button>
+  </div>
+
+  <div class="card card-gold-top" style="margin-bottom:16px">
+    <div class="label">Total pipeline</div>
+    <div style="display:flex;gap:20px">
+      <div>
+        <div style="font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--gold)" id="totalContacts">0</div>
+        <div style="font-size:9px;color:var(--text-dim)">CONTACTS</div>
+      </div>
+      <div>
+        <div style="font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--green)" id="totalReplied">0</div>
+        <div style="font-size:9px;color:var(--text-dim)">RÉPONSES</div>
+      </div>
+      <div>
+        <div style="font-family:Syne,sans-serif;font-size:28px;font-weight:800;color:var(--blue)" id="totalCountries">0</div>
+        <div style="font-size:9px;color:var(--text-dim)">PAYS</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="countriesList"></div>
+</div>
+
+<!-- PAGE: SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div>
+      <div class="brand">War Room</div>
+      <div class="page-title">Réglages</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Notifications</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Rappel matinal</div>
+        <div class="setting-sub">Chaque jour à l'heure choisie</div>
+      </div>
+      <div class="toggle" id="notifToggle" onclick="toggleNotif()"></div>
+    </div>
+    <div class="setting-row" style="border:none">
+      <div>
+        <div class="setting-label">Heure du rappel</div>
+        <div class="setting-sub" id="reminderTimeLabel">09:00</div>
+      </div>
+      <input type="time" id="reminderTime" value="09:00"
+        style="background:var(--navy);border:1px solid var(--gray);border-radius:8px;color:var(--gold);font-family:monospace;padding:8px;outline:none;font-size:14px"
+        onchange="saveReminderTime()">
+    </div>
+    <button class="btn-secondary" onclick="testNotif()">🔔 Tester la notification</button>
+  </div>
+
+  <div class="card">
+    <div class="label">Objectifs MRR</div>
+    <div id="mrrSettings"></div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="addMrrTarget()">+ Ajouter un palier</button>
+  </div>
+
+  <div class="card">
+    <div class="label">Citations motivantes</div>
+    <div id="quotesList"></div>
+    <button class="btn-secondary" style="margin-top:8px" onclick="showAddQuote()">+ Ajouter une citation</button>
+  </div>
+
+  <div class="card">
+    <div class="label">Données</div>
+    <button class="btn-secondary" onclick="exportData()">📤 Exporter mes données</button>
+    <button class="btn-secondary" style="margin-top:8px;color:#ff7070;border-color:rgba(255,59,59,0.3)" onclick="resetAll()">🗑 Tout réinitialiser</button>
+  </div>
+
+  <div style="text-align:center;padding:20px 0;font-size:9px;color:var(--text-dim);letter-spacing:2px">
+    JURISTVAULT WAR ROOM · COTONOU → MONDE<br>
+    "Build fast. Ship real. Charge what you're worth."
+  </div>
+</div>
+
+<!-- BOTTOM TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showPage('home')" id="tab-home">
+    <span class="tab-icon">🏠</span>HOME
+  </div>
+  <div class="tab" onclick="showPage('objectives')" id="tab-objectives">
+    <span class="tab-icon">✅</span>OBJECTIFS
+  </div>
+  <div class="tab" onclick="showPage('outreach')" id="tab-outreach">
+    <span class="tab-icon">📧</span>OUTREACH
+  </div>
+  <div class="tab" onclick="showPage('settings')" id="tab-settings">
+    <span class="tab-icon">⚙️</span>RÉGLAGES
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-addObj">
+  <div class="modal">
+    <div class="modal-title">Nouvel objectif</div>
+    <input class="text-input" id="newObjText" placeholder="Ex: Envoyer 5 emails France..." />
+    <div class="form-row">
+      <select class="select-input" id="newObjTag">
+        <option value="sales">💰 SALES</option>
+        <option value="build">🔧 BUILD</option>
+        <option value="urgent">🚨 URGENT</option>
+        <option value="personal">✨ PERSO</option>
+      </select>
+      <button class="btn-primary" onclick="addObjective()">Ajouter</button>
+    </div>
+    <button class="btn-secondary" onclick="closeModal('modal-addObj')">Annuler</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-addCountry">
+  <div class="modal">
+    <div class="modal-title">Nouveau pays</div>
+    <input class="text-input" id="newCountryFlag" placeholder="Emoji drapeau (ex: 🇨🇮)" maxlength="4"/>
+    <input class="text-input" id="newCountryName" placeholder="Nom du pays (ex: Côte d'Ivoire)"/>
+    <input class="text-input" id="newCountryContacts" placeholder="Nb contacts (ex: 3)" type="number"/>
+    <input class="text-input" id="newCountryStatus" placeholder="Statut (ex: En attente de réponse)"/>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="addCountry()">Ajouter</button>
+    <button class="btn-secondary" onclick="closeModal('modal-addCountry')">Annuler</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-editStat">
+  <div class="modal">
+    <div class="modal-title" id="editStatTitle">Modifier</div>
+    <input class="text-input" id="editStatInput" placeholder="Nouvelle valeur..."/>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="saveStatEdit()">Enregistrer</button>
+    <button class="btn-secondary" onclick="closeModal('modal-editStat')">Annuler</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-addQuote">
+  <div class="modal">
+    <div class="modal-title">Nouvelle citation</div>
+    <textarea class="text-input" id="newQuoteText" placeholder="Ta citation motivante..." style="min-height:80px;resize:none"></textarea>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="addQuote()">Ajouter</button>
+    <button class="btn-secondary" onclick="closeModal('modal-addQuote')">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// DATA
+// ═══════════════════════════════
+const DEFAULT_DATA = {
+  objectives: [
+    { id: 1, text: "Envoyer 5 emails outreach personnalisés", tag: "sales", done: false },
+    { id: 2, text: "Vérifier réponses + relances J+3", tag: "sales", done: false },
+    { id: 3, text: "Attendre feedback Max-Guy", tag: "urgent", done: false },
+    { id: 4, text: "Vérifier Google Search Console", tag: "build", done: false },
+    { id: 5, text: "Enrichir prompt Gemini (earn-out gap)", tag: "build", done: false },
+  ],
+  countries: [
+    { id: 1, flag: "🇫🇷", name: "France", contacts: 5, replied: 0, status: "Relances J+3 envoyées" },
+    { id: 2, flag: "🇧🇷", name: "Brésil", contacts: 3, replied: 0, status: "Envoyés, en attente" },
+    { id: 3, flag: "🇦🇪", name: "Dubai", contacts: 2, replied: 0, status: "Envoyés, en attente" },
+    { id: 4, flag: "🇲🇦", name: "Maroc", contacts: 2, replied: 0, status: "Envoyés, en attente" },
+  ],
+  mrrTargets: [
+    { month: "Mois 1", amount: "$3k", clients: "1 client Solo", achieved: false },
+    { month: "Mois 2", amount: "$6k", clients: "2 clients Solo", achieved: false },
+    { month: "Mois 3", amount: "$9k", clients: "3 clients 🔥", achieved: false },
+    { month: "Mois 6", amount: "$18k", clients: "6 clients", achieved: false },
+    { month: "An 1", amount: "$40k", clients: "Mix Solo/Team", achieved: false },
+  ],
+  quotes: [
+    "3 clients en 3 mois. Pas une option. Un plan.",
+    "Harvey a commencé exactement là où tu es. La différence : il a pas arrêté.",
+    "Chaque email envoyé est une graine. Tu arroseras avec Gen8us.",
+    "Le marché LATAM t'attend. Personne d'autre y est allé.",
+    "Un avocat satisfait en amène 3 autres. Ferme le premier.",
+    "Qui ne risque rien n'a rien. T'as déjà tout risqué. Continue.",
+    "Loi 23 — Concentre tes forces. Boutique M&A. 6 langues. LATAM.",
+    "$9k MRR en mois 3. Mathématiquement possible. Mentalement certain.",
+    "Depuis Cotonou vers le monde. C'est pas un rêve. C'est un plan.",
+    "Emma.legal a prouvé le marché. Toi tu prends ce qu'ils ignorent.",
+    "Le premier client débloquerait tout. Il existe. Trouve-le cette semaine.",
+    "La course est lancée. T'es déjà dedans. Accélère.",
+    "Pas de réseau ? Gen8us sera ton réseau. Build it.",
+    "Pessimiste = regarde les obstacles. Fondateur = cherche le chemin.",
+    "Un deal M&A = $33k économisés. JuristVault coûte $3k. ROI évident.",
+  ],
+  stats: { emails: "11", replies: "0", demos: "0", mrr: "$0" },
+  streak: 0,
+  lastActive: null,
+  notifEnabled: false,
+  reminderTime: "09:00",
+};
+
+function loadData() {
+  const saved = localStorage.getItem('warroom_data');
+  if (!saved) return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  const data = JSON.parse(saved);
+  // Merge defaults for missing keys
+  return { ...JSON.parse(JSON.stringify(DEFAULT_DATA)), ...data };
+}
+
+function saveData() { localStorage.setItem('warroom_data', JSON.stringify(data)); }
+
+let data = loadData();
+let currentStatKey = null;
+
+// ═══════════════════════════════
+// DAILY RESET
+// ═══════════════════════════════
+function checkDailyReset() {
+  const today = new Date().toDateString();
+  if (data.lastActive !== today) {
+    const wasActive = data.lastActive !== null;
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    if (wasActive && data.lastActive === yesterday.toDateString()) {
+      const allDone = data.objectives.every(o => o.done);
+      if (allDone) data.streak = (data.streak || 0) + 1;
+      else data.streak = 0;
+    } else if (wasActive) {
+      data.streak = 0;
+    }
+    data.objectives = data.objectives.map(o => ({...o, done: false}));
+    data.lastActive = today;
+    saveData();
+  }
+}
+checkDailyReset();
+
+// ═══════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  renderAll();
+}
+
+// ═══════════════════════════════
+// CLOCK
+// ═══════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('dateDisplay').textContent =
+    now.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'short'}).toUpperCase();
+
+  // Daily reminder
+  if (data.notifEnabled && Notification.permission === 'granted') {
+    const [h, m] = (data.reminderTime || '09:00').split(':').map(Number);
+    if (now.getHours() === h && now.getMinutes() === m && now.getSeconds() < 5) {
+      new Notification('☀️ JuristVault War Room', {
+        body: 'Cotonou → Monde. Lance les objectifs du jour. 💪',
+        icon: 'icon-192.png'
+      });
+    }
+  }
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ═══════════════════════════════
+// QUOTE
+// ═══════════════════════════════
+function renderQuote() {
+  const idx = new Date().getDate() % data.quotes.length;
+  document.getElementById('quoteText').textContent = data.quotes[idx];
+}
+
+// ═══════════════════════════════
+// MRR TARGETS
+// ═══════════════════════════════
+function renderMrrGrid() {
+  const el = document.getElementById('mrrGrid');
+  if (!el) return;
+  const targets = data.mrrTargets.slice(0, 3);
+  el.innerHTML = targets.map((t, i) => `
+    <div class="mrr-card ${t.achieved ? 'achieved' : i === 0 && !t.achieved ? 'active' : ''}">
+      ${t.achieved ? '<div class="check-badge">✅</div>' : ''}
+      <div class="mrr-month">${t.month}</div>
+      <div class="mrr-amount ${t.achieved ? 'mrr-achieved' : ''}">${t.amount}</div>
+      <div class="mrr-clients">${t.clients}</div>
+    </div>
+  `).join('');
+}
+
+function renderMrrSettings() {
+  const el = document.getElementById('mrrSettings');
+  if (!el) return;
+  el.innerHTML = data.mrrTargets.map((t, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray)">
+      <div style="flex:1;font-size:12px">${t.month} — ${t.amount} — ${t.clients}</div>
+      <div class="toggle ${t.achieved ? 'on' : ''}" onclick="toggleMrr(${i})"></div>
+      <button class="icon-btn" onclick="deleteMrr(${i})">🗑</button>
+    </div>
+  `).join('');
+}
+
+function toggleMrr(i) {
+  data.mrrTargets[i].achieved = !data.mrrTargets[i].achieved;
+  saveData(); renderAll();
+}
+
+function deleteMrr(i) {
+  data.mrrTargets.splice(i, 1);
+  saveData(); renderAll();
+}
+
+function addMrrTarget() {
+  const month = prompt('Mois (ex: Mois 4):');
+  if (!month) return;
+  const amount = prompt('MRR cible (ex: $12k):');
+  if (!amount) return;
+  const clients = prompt('Description (ex: 4 clients Solo):');
+  data.mrrTargets.push({ month, amount, clients: clients || '', achieved: false });
+  saveData(); renderAll();
+}
+
+// ═══════════════════════════════
+// OBJECTIVES
+// ═══════════════════════════════
+function renderObjectives() {
+  const el = document.getElementById('objectivesList');
+  if (!el) return;
+
+  if (data.objectives.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:12px">
+      Aucun objectif. Ajoute-en un !
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = data.objectives.map((obj, i) => `
+    <div class="obj-item ${obj.done ? 'done' : ''}" onclick="toggleObj(${i})">
+      <div class="checkbox">${obj.done ? '✓' : ''}</div>
+      <div class="obj-content">
+        <div class="obj-text">${obj.text}</div>
+        <span class="obj-tag tag-${obj.tag}">${obj.tag.toUpperCase()}</span>
+      </div>
+      <div class="obj-delete" onclick="event.stopPropagation();deleteObj(${i})">✕</div>
+    </div>
+  `).join('');
+
+  // Update progress
+  const done = data.objectives.filter(o => o.done).length;
+  const total = data.objectives.length;
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  const progEl = document.getElementById('objProgress');
+  const fillEl = document.getElementById('progressFill');
+  if (progEl) progEl.textContent = `${done}/${total} objectifs`;
+  if (fillEl) fillEl.style.width = pct + '%';
+}
+
+function toggleObj(i) {
+  data.objectives[i].done = !data.objectives[i].done;
+  saveData(); renderObjectives();
+
+  const allDone = data.objectives.every(o => o.done);
+  if (allDone && Notification.permission === 'granted') {
+    new Notification('🎉 Tous les objectifs accomplis !', {
+      body: 'Incroyable journée. Demain on recommence plus fort. 🔥'
+    });
+  }
+}
+
+function deleteObj(i) {
+  data.objectives.splice(i, 1);
+  saveData(); renderObjectives();
+}
+
+function clearDoneObjs() {
+  data.objectives = data.objectives.filter(o => !o.done);
+  saveData(); renderObjectives();
+}
+
+function showAddObj() { openModal('modal-addObj'); }
+
+function addObjective() {
+  const text = document.getElementById('newObjText').value.trim();
+  if (!text) return;
+  const tag = document.getElementById('newObjTag').value;
+  data.objectives.push({ id: Date.now(), text, tag, done: false });
+  document.getElementById('newObjText').value = '';
+  saveData(); renderObjectives();
+  closeModal('modal-addObj');
+}
+
+// ═══════════════════════════════
+// OUTREACH / COUNTRIES
+// ═══════════════════════════════
+function renderCountries() {
+  const el = document.getElementById('countriesList');
+  if (!el) return;
+
+  let totalContacts = 0, totalReplied = 0;
+  data.countries.forEach(c => { totalContacts += (c.contacts||0); totalReplied += (c.replied||0); });
+
+  const tcEl = document.getElementById('totalContacts');
+  const trEl = document.getElementById('totalReplied');
+  const tcoEl = document.getElementById('totalCountries');
+  if (tcEl) tcEl.textContent = totalContacts;
+  if (trEl) trEl.textContent = totalReplied;
+  if (tcoEl) tcoEl.textContent = data.countries.length;
+
+  el.innerHTML = data.countries.map((c, i) => `
+    <div class="country-card">
+      <div class="country-flag">${c.flag}</div>
+      <div class="country-info">
+        <div class="country-name">${c.name}</div>
+        <div class="country-stats">${c.contacts} contacts · ${c.replied} réponses</div>
+        <div class="country-status">
+          <div class="pulse-dot ${c.replied > 0 ? 'green' : ''}"></div>
+          ${c.status}
+        </div>
+      </div>
+      <div class="country-actions">
+        <button class="icon-btn" onclick="editCountry(${i})">✏️</button>
+        <button class="icon-btn" onclick="deleteCountry(${i})">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showAddCountry() { openModal('modal-addCountry'); }
+
+function addCountry() {
+  const flag = document.getElementById('newCountryFlag').value.trim();
+  const name = document.getElementById('newCountryName').value.trim();
+  const contacts = parseInt(document.getElementById('newCountryContacts').value) || 0;
+  const status = document.getElementById('newCountryStatus').value.trim();
+  if (!name) return;
+  data.countries.push({ id: Date.now(), flag: flag || '🌍', name, contacts, replied: 0, status: status || 'En attente' });
+  ['newCountryFlag','newCountryName','newCountryContacts','newCountryStatus'].forEach(id => document.getElementById(id).value = '');
+  saveData(); renderCountries();
+  closeModal('modal-addCountry');
+}
+
+function editCountry(i) {
+  const c = data.countries[i];
+  const newReplied = prompt(`Réponses reçues pour ${c.name} (actuellement: ${c.replied}):`, c.replied);
+  if (newReplied !== null) {
+    data.countries[i].replied = parseInt(newReplied) || 0;
+    const newStatus = prompt('Nouveau statut:', c.status);
+    if (newStatus) data.countries[i].status = newStatus;
+    saveData(); renderCountries();
+  }
+}
+
+function deleteCountry(i) {
+  if (confirm(`Supprimer ${data.countries[i].name} ?`)) {
+    data.countries.splice(i, 1);
+    saveData(); renderCountries();
+  }
+}
+
+// ═══════════════════════════════
+// STATS
+// ═══════════════════════════════
+function renderStats() {
+  ['emails','replies','demos','mrr'].forEach(key => {
+    const el = document.getElementById('stat' + key.charAt(0).toUpperCase() + key.slice(1));
+    if (el) el.textContent = data.stats[key] || '0';
+  });
+  const mrrEl = document.getElementById('mrrDisplay');
+  const emailEl = document.getElementById('emailDisplay');
+  const streakEl = document.getElementById('streakDisplay');
+  if (mrrEl) mrrEl.textContent = data.stats.mrr || '$0';
+  if (emailEl) emailEl.textContent = data.stats.emails || '0';
+  if (streakEl) streakEl.textContent = data.streak || 0;
+}
+
+function editStat(key) {
+  currentStatKey = key;
+  const labels = { emails: 'Emails envoyés', replies: 'Réponses reçues', demos: 'Démos bookées', mrr: 'MRR actuel' };
+  document.getElementById('editStatTitle').textContent = labels[key];
+  document.getElementById('editStatInput').value = data.stats[key] || '';
+  openModal('modal-editStat');
+}
+
+function saveStatEdit() {
+  if (!currentStatKey) return;
+  data.stats[currentStatKey] = document.getElementById('editStatInput').value.trim();
+  saveData(); renderStats();
+  closeModal('modal-editStat');
+}
+
+// ═══════════════════════════════
+// QUOTES SETTINGS
+// ═══════════════════════════════
+function renderQuotesList() {
+  const el = document.getElementById('quotesList');
+  if (!el) return;
+  el.innerHTML = data.quotes.map((q, i) => `
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px solid var(--gray)">
+      <div style="flex:1;font-size:11px;line-height:1.4;color:var(--text-dim)">${q}</div>
+      <button class="icon-btn" onclick="deleteQuote(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function showAddQuote() { openModal('modal-addQuote'); }
+
+function addQuote() {
+  const text = document.getElementById('newQuoteText').value.trim();
+  if (!text) return;
+  data.quotes.push(text);
+  document.getElementById('newQuoteText').value = '';
+  saveData(); renderQuotesList(); renderQuote();
+  closeModal('modal-addQuote');
+}
+
+function deleteQuote(i) {
+  data.quotes.splice(i, 1);
+  saveData(); renderQuotesList(); renderQuote();
+}
+
+// ═══════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════
+function toggleNotif() {
+  if (!data.notifEnabled) {
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        data.notifEnabled = true;
+        saveData(); renderSettings();
+        new Notification('🔥 War Room activé !', { body: 'Rappels quotidiens configurés. On va chercher les clients. 💪' });
+      }
+    });
+  } else {
+    data.notifEnabled = false;
+    saveData(); renderSettings();
+  }
+}
+
+function testNotif() {
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') sendTestNotif();
+    });
+  } else {
+    sendTestNotif();
+  }
+}
+
+function sendTestNotif() {
+  new Notification('☀️ JuristVault War Room', {
+    body: 'Cotonou → Monde. 3 clients en 3 mois. Lance les emails. 💪',
+    icon: 'icon-192.png'
+  });
+}
+
+function saveReminderTime() {
+  data.reminderTime = document.getElementById('reminderTime').value;
+  document.getElementById('reminderTimeLabel').textContent = data.reminderTime;
+  saveData();
+}
+
+function renderSettings() {
+  const toggle = document.getElementById('notifToggle');
+  if (toggle) toggle.classList.toggle('on', data.notifEnabled);
+  const timeInput = document.getElementById('reminderTime');
+  if (timeInput) timeInput.value = data.reminderTime || '09:00';
+  const timeLabel = document.getElementById('reminderTimeLabel');
+  if (timeLabel) timeLabel.textContent = data.reminderTime || '09:00';
+  renderMrrSettings();
+  renderQuotesList();
+}
+
+// ═══════════════════════════════
+// DATA EXPORT
+// ═══════════════════════════════
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'warroom-backup.json';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function resetAll() {
+  if (confirm('⚠️ Tout réinitialiser ? Toutes tes données seront perdues.')) {
+    localStorage.removeItem('warroom_data');
+    data = loadData();
+    renderAll();
+  }
+}
+
+// ═══════════════════════════════
+// MODALS
+// ═══════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  setTimeout(() => {
+    const input = document.querySelector('#' + id + ' input, #' + id + ' textarea');
+    if (input) input.focus();
+  }, 100);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════
+// SERVICE WORKER
+// ═══════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ═══════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════
+function renderAll() {
+  renderQuote();
+  renderMrrGrid();
+  renderObjectives();
+  renderCountries();
+  renderStats();
+  renderSettings();
+}
+
+renderAll();
+</script>
+</body>
+</html>
